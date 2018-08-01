@@ -1,0 +1,5 @@
+numpy
+ensure
+reproducible==0.2.2
+bokeh
+jupyter

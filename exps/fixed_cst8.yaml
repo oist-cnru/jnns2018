@@ -1,0 +1,11 @@
+base: exp_base.yaml
+checkpoints: {filepath: '../results/fixed_cst8'}
+network:
+  # layers configuration
+  # N:     number of neuron in the layer
+  # τ:     time constant for the layer
+  # cls:   class of the layer, here `mtrnn.MTLayer` for fixed τ
+  layers:
+  - {N: 10, τ: 8.0, cls: mtrnn.MTLayer}
+  - {N: 10, τ: 8.0, cls: mtrnn.MTLayer}
+  - {N: 10, τ: 8.0, cls: mtrnn.MTLayer}

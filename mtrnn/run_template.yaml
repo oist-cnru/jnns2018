@@ -1,0 +1,102 @@
+# Run configuration template
+
+# The run configuration template is meant to provide the necessary parameters
+# for running a rudimentary training/testing session using the `Run` class.
+# It is purposefully designed to be simple, to the point of being insufficient
+# for any serious training procedure.
+
+# To adapt it to your need, you should inherit the `Run` class, redefine its
+# methods as needed, and create a configuration file that have the necessary
+# parameters.
+
+
+# Save
+checkpoints:
+  filepath: 'exp_checkpoint'  # filepath prefix to save checkpoints
+  period:   100  # save a checkpoint every `period` epochs
+
+# Logs
+logs:  # list of what to log
+  - loss
+  - τ
+  - error_CL_train
+
+# Reproducibility
+seeds:  # random seeds
+  # note that one constraint is enforced with the `Run` class:
+  # `torch_seed` < `python_seed` < `dataset_seed`
+  torch_seed:   0
+  python_seed:  1  # used for python random module—no effect right now.
+  dataset_seed: 2  # affects batch random shuffling, mainly.
+
+# Dataset
+dataset:
+  # filepath to the data file, which (currently) needs to be in the numpy
+  # format (https://docs.scipy.org/doc/numpy/neps/npy-format.html), and
+  # contains a single matrix, with the sample stacked along the first
+  # dimension and the timesteps along the second.
+  # The path needs to either be absolute, or relative to the current
+  # directory. If loading the configuration from a file such as this one,
+  # the current directory will the one of the config file. Else, it will be
+  # the directory where the Python interpreter has been started.
+  filepath: "/path/to/data.npy"
+
+# Network
+network:
+  classname: "mtrnn.MTRNN" # the name of the class of the model
+                                 # it needs to be importable
+  layers:  # we start with the lowest layer
+    # `τ`   is the time constant,
+    # `N`   the number of neurons
+    # `cls` the layer class to instanciate for each layer
+    - {τ: 2, N: 100, cls: "mtrnn.VBPLayer"}  # layer 0
+    - {τ: 4, N:  30, cls: "mtrnn.VBPLayer"}  # layer 1
+    - {τ: 8, N:  10, cls: "mtrnn.VBPLayer"}  # layer 2
+  # the input and output dimension of the network are inferred from the dataset.
+
+  log_eps:  1e-8   # epsilon value to numerically stabilize log operations.
+
+# Loss
+loss:
+  w: 0.001         # metaprior of the loss
+  loss_fun: "MSE"  # loss function, either "MSE" or "KLDiv"
+
+# Training
+training:
+  learning_rate: 0.001  # learning rate of the optimizer
+  grad_clip:     100.0  # gradient clipping. Gradient will be normalized using
+                        # using a L-norm when above this threshold
+                        # set to `null` to disable gradient clipping
+  grad_clip_norm_type: 2  # gradient clipping norm. 1 for L1, 2 for L2 and inf
+                          # for infinity norm.
+
+  n_train : 100    # number of sequences to pick from the dataset to
+                   # train the network. The first `n_samples` samples will be
+                   # selected, and used during the `Run.train()` method.
+  n_validate : 10  # number of sequences to pick for the validation dataset,
+                   # used during the `Run.validate()` method. Those sequences
+                   # will be picked sequentially, after the training set.
+                   # The rest of the sequences in the dataset set will be the
+                   # testing dataset, used with the `Run.test()` method.
+  n_test: 18       # number of sequences to pick for the test dataset.
+  batch_size: 10   # batch size. if too high and using CUDA, your GPU might
+                   # run out of memory. Decrease this if that happens.
+                   # note that if this is not a divisor of `n_train`, this value
+                   # might not be respected, as the batches are created to only
+                   # vary of at most 1 in size from one another.
+  n_epoch   : 10   # for how many epochs to run the training.
+
+# Testing
+testing:
+  error_CL_train:  # closed-loop error on the training set
+    period: 10     # every 10 epochs
+
+# Computation Details
+computation:
+  # True to activate jit computation for closed-loop evaluation
+  jit: False
+  # 'cpu' or 'cuda' or null to autoselect cuda if available.
+  device: null
+  # number of OpenMP thread for CPU computation. Set to None for letting it
+  # adjust to the processor, 1 to ensure determinism.
+  num_thread: 1

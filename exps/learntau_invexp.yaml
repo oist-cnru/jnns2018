@@ -1,0 +1,12 @@
+base: exp_base.yaml
+checkpoints: {filepath: '../results/learntau_invexp'}
+network:
+  # layers configuration
+  # N:     number of neuron in the layer
+  # τ:     initial time constant value for the layer
+  # cls:   class of the layer, here `mtrnn.MTLayerLearnTau` for learnable τ
+  # boost: factor that boost the effective learning rate of τ.
+  layers:
+  - {N: 10, τ: 16.0, cls: mtrnn.MTLayerLearnTau, boost: 10.0}
+  - {N: 10, τ:  8.0, cls: mtrnn.MTLayerLearnTau, boost: 10.0}
+  - {N: 10, τ:  4.0, cls: mtrnn.MTLayerLearnTau, boost: 10.0}
